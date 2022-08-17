@@ -1,0 +1,21 @@
+<launch>
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
+
+    <include file="$(find naoqi_driver)/launch/naoqi_driver.launch" >
+      <arg name="nao_ip" value="$(arg pepper_ip)" />
+      <arg name="roscore_ip" value="$(arg roscore_ip)" />
+      <arg name="network_interface" value="wlan0" />
+    </include>
+
+    <node name="lidar" pkg="rplidar_ros" type="rplidarNode" output="log" >
+        <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>
+        <param name="serial_baudrate"     type="int"    value="1000000"/>
+        <param name="frame_id"            type="string" value="laser_frame"/>
+        <param name="inverted"            type="bool"   value="false"/>
+        <param name="angle_compensate"    type="bool"   value="true"/>
+    </node>
+
+    <node name="laser_to_base" pkg="tf" type="static_transform_publisher" args="0 0.15 0.3 3.14 0 0 base_footprint laser_frame 30" output="log" />
+    <node name="gmapping" pkg="gmapping" type="slam_gmapping" output="log" />
+</launch>
+

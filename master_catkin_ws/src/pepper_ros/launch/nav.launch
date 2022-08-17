@@ -1,0 +1,26 @@
+<launch>
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
+
+    <include file="$(find naoqi_driver)/launch/naoqi_driver.launch" >
+      <arg name="nao_ip" value="$(arg pepper_ip)" />
+      <arg name="roscore_ip" value="$(arg roscore_ip)" />
+      <arg name="network_interface" value="eth0" />
+    </include>
+
+    <arg name="map" default="/home/pepper/sparc/master_catkin_ws/src/pepper_ros/maps/tst1.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)" />
+
+    <node name="laser_to_base" pkg="tf" type="static_transform_publisher" args="0 0.15 0.3 3.14 0 0 base_footprint laser_frame 30" />
+
+<node name="rplidarNode"          pkg="rplidar_ros"  type="rplidarNode" output="screen">
+  <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>  
+  <param name="serial_baudrate"     type="int"    value="1000000"/>
+  <param name="frame_id"            type="string" value="laser_frame"/>
+  <param name="inverted"            type="bool"   value="false"/>
+  <param name="angle_compensate"    type="bool"   value="true"/>
+  </node>
+
+<include file="/home/pepper/sparc/master_catkin_ws/src/pepper_ros/launch/amcl.launch" />
+<include file="/home/pepper/sparc/master_catkin_ws/src/pepper_ros/launch/move_base.launch" />
+
+</launch>

@@ -1,0 +1,100 @@
+<launch>
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
+
+    <include file="$(find naoqi_driver)/launch/naoqi_driver.launch" >
+      <arg name="nao_ip" value="$(arg pepper_ip)" />
+      <arg name="roscore_ip" value="$(arg roscore_ip)" />
+      <arg name="network_interface" value="wlan0" />
+    </include>
+
+    <node name="lidar" pkg="rplidar_ros" type="rplidarNode" output="screen" >
+        <param name="serial_port"         type="string" value="/dev/ttyUSB0"/>
+        <param name="serial_baudrate"     type="int"    value="1000000"/>
+        <param name="frame_id"            type="string" value="laser_frame"/>
+        <param name="inverted"            type="bool"   value="false"/>
+        <param name="angle_compensate"    type="bool"   value="true"/>
+    </node>
+
+    <node name="laser_to_base" pkg="tf" type="static_transform_publisher" args="0 0.15 0.3 3.14 0 0 base_footprint laser_frame 30" output="log" />
+
+<node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    <param name="output_timing" value="false"/>
+
+    <param name="use_tf_scan_transformation" value="true"/>
+    <param name="use_tf_pose_start_estimate" value="false"/>
+    <param name="scan_topic" value="scan" />
+
+    <!-- Map size / start point -->
+    <param name="map_resolution" value="0.050"/>
+    <param name="map_size" value="2048"/>
+    <param name="map_start_x" value="0.5"/>
+    <param name="map_start_y" value="0.5" />
+
+    <!-- Map update parameters -->
+    <param name="update_factor_free" value="0.4"/>
+    <param name="update_factor_occupied" value="0.9" />
+    <param name="map_update_distance_thresh" value="0.4"/>
+    <param name="map_update_angle_thresh" value="0.06" />
+
+    <!--
+      <param name="pub_drawings" value="true"/>
+      <param name="pub_debug_output" value="true"/>
+    -->
+    <param name="pub_map_odom_transform" value="true"/>
+    <param name="map_frame" value="map" />
+    <param name="base_frame" value="base_footprint" />
+    <param name="odom_frame" value="base_footprint" />
+
+  </node>
+<!--<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+        <remap from="/scan" to="/naoqi_driver/laser"/>
+<remap from="map_metadata" to="map_metadata2" />
+<remap from="map" to="map2" />
+        <param name="base_frame" value="base_footprint" />
+        <param name="map_update_interval" value="1" />
+
+        <param name="linearUpdate" value="0.2" />
+        <param name="angularUpdate" value="0.1" />
+        <param name="temporalUpdate" value="0.2" />
+        <param name="xmin" value="-10." />
+        <param name="ymin" value="-10." />
+        <param name="xmax" value="10." />
+        <param name="ymax" value="10." />
+        
+        <param name="particles" value="100" />
+        <param name="maxRange" value="1.5" />
+        <param name="maxUrange" value="1.1" />
+        <param name="delta" value="0.05" />
+
+
+        <param name="sigma" value="0.1" />
+        <param name="kernelSize" value="1.5" />
+
+        <param name="resampleThreshold" value="0.1" />
+
+
+    </node>-->
+  <arg name="disable_poseupdate" default="false" />
+  <group if="$(arg disable_poseupdate)">
+    <param name="hector_mapping/pub_map_odom_transform" value="true"/>
+    <remap from="poseupdate" to="poseupdate_disabled"/>
+  </group>
+  <group unless="$(arg disable_poseupdate)">
+    <param name="hector_mapping/pub_map_odom_transform" value="false"/>
+    <node pkg="tf" type="static_transform_publisher" name="map_nav_broadcaster" args="0 0 0 0 0 0 map nav 100"/>
+  </group>
+
+  <!--
+  <node pkg="hector_map_server" type="hector_map_server" name="hector_map_server" output="screen" />
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="hector_trajectory_server" output="screen" />
+
+  <node pkg="hector_geotiff" type="geotiff_node" name="hector_geotiff_node" output="screen" launch-prefix="nice -n 15">
+    <param name="map_file_path" type="string" value="$(find hector_geotiff)/maps" />
+    <param name="map_file_base_name" type="string" value="MappingBox" />
+    <param name="geotiff_save_period" type="double" value="45" />
+  </node>
+  -->
+
+  <node pkg="topic_tools" type="throttle" name="map_throttle" args="messages map 0.1 throttled_map" />
+</launch>
+
