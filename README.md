@@ -56,6 +56,6 @@ On the machine you are running the speech recognition:
 
 # How to run the system
 Prerequisites:
-- Make sure the speech recognition, SLAM, RPLidarNode and every equipment is plugged in and functional and (optional) Pepper
+- Make sure every equipment is plugged in and functional Pepper
 
 - python main.py
