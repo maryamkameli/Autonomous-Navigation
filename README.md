@@ -2,10 +2,10 @@
 Global repo that contains the other Pepper repos as submodules, as well as code for planning the behavior of the robot in a goal driven manner.
 
 # Hardware:
-- Raspberry PI should be plugged in the battery
+- Jetson NANO should be plugged in the power bank
 - Make sure the battery is fully charged
-- The Lidar should be connected to the RPi
-- The RPi should be in the same network as the PC running the Neural Nets
+- The Lidar should be connected to the RP
+- The RP should be in the same network as the PC running the Neural Nets
 
 # How to start the RPLidarNode on the RPi
 On the Master PC:
